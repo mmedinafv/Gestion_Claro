@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instalaciones - Claro Honduras</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container no-sidebar">
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="btn btn-secondary" id="btnVolverMenu">⬅ Volver al Menú Principal</button>
+                    <h1>Instalaciones</h1>
+                </div>
+                <div class="header-actions">
+                    <div class="user-info">
+                        <span class="user-name" id="userNameDisplay"></span>
+                        <span class="user-role" id="userRoleDisplay"></span>
+                        <span class="user-avatar">👤</span>
+                    </div>
+                    <button class="btn btn-danger" id="logoutBtn">Salir</button>
+                </div>
+            </header>
+
+            <div class="filters-bar">
+                <input type="text" id="search-instalacion" placeholder="Buscar cliente o sitio..."
+                    style="min-width: 300px;">
+                <select id="filter-estado" style="min-width: 250px;">
+                    <option value="">🌐 Todos los Estados</option>
+                    <option value="FO-en Proceso-Instalacion">🔄 FO en Proceso</option>
+                    <option value="Fibra-Instal/finalizada">✅ Finalizada</option>
+                    <option value="Ing-en Proceso">⏳ En Proceso</option>
+                    <option value="Ing-lista y Aplicada">📋 Lista y Aplicada</option>
+                </select>
+                <button class="btn btn-primary" id="apply-filters">🔎 Filtrar</button>
+                <button class="btn btn-secondary" id="clear-filters">Limpiar</button>
+            </div>
+
+            <div class="card">
+                <h3>Listado de Instalaciones <span id="result-count" style="font-weight:normal;color:#666;"></span></h3>
+                <div class="table-container">
+                    <table class="table" id="instalaciones-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente / Servicio</th>
+                                <th>Avance</th>
+                                <th>Sitio</th>
+                                <th>Medio</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/instalaciones.js"></script>
+</body>
+
+</html>

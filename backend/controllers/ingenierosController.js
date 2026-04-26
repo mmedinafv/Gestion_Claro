@@ -1,98 +1,78 @@
-// backend/server.js - Versión SIMPLE y FUNCIONAL
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+const pool = require('../config/db');
 
-const app = express();
-const PORT = 5000;
+const ingenierosController = {
 
-app.use(cors());
-app.use(express.json());
+    getAll: async (req, res) => {
+        try {
+            const [rows] = await pool.execute(`
+                SELECT 
+                    id_ingeniero,
+                    nombre,
+                    especialidad,
+                    telefono,
+                    activo
+                FROM ingenieros 
+                WHERE activo = TRUE 
+                ORDER BY nombre ASC
+            `);
 
-console.log("✅ Servidor iniciando...");
+            res.json({ success: true, data: rows });
+        } catch (error) {
+            console.error("❌ Error getAll ingenieros:", error.message);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
 
-// ==================== RUTAS DIRECTAS (sin archivos separados) ====================
+    create: async (req, res) => {
+        try {
+            const { nombre, especialidad = 'General', telefono } = req.body;
 
-// Dashboard
-app.get('/api/dashboard/resumen', async (req, res) => {
-    try {
-        const NodoModel = require('./models/nodoModel');
-        const data = await NodoModel.getEstadisticas();
-        res.json({ success: true, data });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+            if (!nombre) {
+                return res.status(400).json({ success: false, message: 'El nombre es obligatorio' });
+            }
+
+            const [result] = await pool.execute(`
+                INSERT INTO ingenieros (nombre, especialidad, telefono, activo)
+                VALUES (?, ?, ?, TRUE)
+            `, [nombre.trim(), especialidad, telefono || null]);
+
+            res.status(201).json({
+                success: true,
+                message: 'Ingeniero creado correctamente',
+                id: result.insertId
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    update: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { nombre, especialidad, telefono } = req.body;
+
+            await pool.execute(`
+                UPDATE ingenieros 
+                SET nombre = ?, especialidad = ?, telefono = ?
+                WHERE id_ingeniero = ?
+            `, [nombre, especialidad, telefono, id]);
+
+            res.json({ success: true, message: 'Ingeniero actualizado correctamente' });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    delete: async (req, res) => {
+        try {
+            const { id } = req.params;
+            await pool.execute(`UPDATE ingenieros SET activo = FALSE WHERE id_ingeniero = ?`, [id]);
+            res.json({ success: true, message: 'Ingeniero eliminado correctamente' });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
     }
-});
+};
 
-// Solicitudes
-app.get('/api/solicitudes', async (req, res) => {
-    try {
-        const NodoModel = require('./models/nodoModel');
-        const data = await NodoModel.getAllSolicitudes(req.query);
-        res.json({ success: true, data, total: data.length });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-app.post('/api/solicitudes', async (req, res) => {
-    try {
-        const NodoModel = require('./models/nodoModel');
-        const id = await NodoModel.createSolicitud(req.body);
-        res.status(201).json({ success: true, message: 'Solicitud creada', id });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// Instalaciones
-app.get('/api/instalaciones', async (req, res) => {
-    try {
-        const NodoModel = require('./models/nodoModel');
-        const data = await NodoModel.getAllInstalaciones(req.query);
-        res.json({ success: true, data });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// Combos
-app.get('/api/combos/sitios', async (req, res) => {
-    try {
-        const NodoModel = require('./models/nodoModel');
-        const data = await NodoModel.getSitios();
-        res.json({ success: true, data });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-app.get('/api/combos/medios', async (req, res) => {
-    try {
-        const NodoModel = require('./models/nodoModel');
-        const data = await NodoModel.getMedios();
-        res.json({ success: true, data });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-app.get('/api/combos/ingenieros', async (req, res) => {
-    try {
-        const NodoModel = require('./models/nodoModel');
-        const data = await NodoModel.getIngenieros();
-        res.json({ success: true, data });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// Ruta raíz
-app.get('/', (req, res) => {
-    res.json({ message: '✅ API funcionando correctamente - Claro Honduras' });
-});
-
-app.listen(PORT, () => {
-    console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
-    console.log(`📌 Prueba: http://localhost:${PORT}/api/solicitudes`);
-});
+module.exports = ingenierosController;

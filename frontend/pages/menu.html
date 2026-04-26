@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Principal - Sistema de Gestión</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo"><h2>Sistema Gestión</h2></div>
+            <nav class="nav-menu">
+                <ul>
+                    <a href="dashboard.html"><li><span class="icon">📊</span><span>Dashboard</span></li></a>
+                    <a href="solicitudes.html"><li><span class="icon">📋</span><span>Solicitudes</span></li></a>
+                    <a href="instalaciones.html"><li><span class="icon">🔧</span><span>Instalaciones</span></li></a>
+                    <a href="ingenieros.html"><li><span class="icon">👥</span><span>Ingenieros</span></li></a>
+                    <a href="usuarios.html" class="admin-only"><li><span class="icon">👤</span><span>Usuarios</span></li></a>
+                </ul>
+            </nav>
+            <div class="sidebar-footer"><button id="logoutBtn" class="btn-logout">🚪 Cerrar Sesión</button></div>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <h1>Menú Principal</h1>
+                <div class="user-info">
+                    <span class="user-name" id="userNameDisplay"></span>
+                    <span class="user-role" id="userRoleDisplay"></span>
+                    <span class="user-avatar">👤</span>
+                </div>
+            </header>
+
+            <section class="menu-hero">
+                <h2>Sistema de Gestión</h2>
+                <p>Acceso principal a los módulos del sistema.</p>
+                <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=80" alt="Sistema de gestión">
+            </section>
+
+            <section class="menu-grid">
+                <a class="menu-card" href="dashboard.html"><span class="icon">📊</span><h3>Dashboard</h3><p>Gráficas y resumen general.</p></a>
+                <a class="menu-card" href="solicitudes.html"><span class="icon">📋</span><h3>Solicitudes</h3><p>Registro y control de solicitudes.</p></a>
+                <a class="menu-card" href="instalaciones.html"><span class="icon">🔧</span><h3>Instalaciones</h3><p>Seguimiento de instalaciones.</p></a>
+                <a class="menu-card" href="ingenieros.html"><span class="icon">👥</span><h3>Ingenieros</h3><p>Gestión de ingenieros.</p></a>
+                <a class="menu-card admin-only" href="usuarios.html"><span class="icon">👤</span><h3>Usuarios</h3><p>Administración de usuarios.</p></a>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/menu.js"></script>
+</body>
+</html>
