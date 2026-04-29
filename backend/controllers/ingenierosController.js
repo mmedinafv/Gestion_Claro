@@ -1,3 +1,4 @@
+// backend/controllers/ingenierosController.js
 const pool = require('../config/db');
 
 const ingenierosController = {
@@ -10,35 +11,45 @@ const ingenierosController = {
                     nombre,
                     especialidad,
                     telefono,
+                    email,
                     activo
                 FROM ingenieros 
-                WHERE activo = TRUE 
-                ORDER BY nombre ASC
+                ORDER BY id_ingeniero DESC
             `);
-
             res.json({ success: true, data: rows });
         } catch (error) {
-            console.error("❌ Error getAll ingenieros:", error.message);
+            console.error('❌ Error getAll ingenieros:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    getById: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const [rows] = await pool.execute(`SELECT * FROM ingenieros WHERE id_ingeniero = ?`, [id]);
+            if (rows.length === 0) return res.status(404).json({ success: false, message: 'Ingeniero no encontrado' });
+            res.json({ success: true, data: rows[0] });
+        } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
     },
 
     create: async (req, res) => {
         try {
-            const { nombre, especialidad = 'General', telefono } = req.body;
+            const { nombre, especialidad, telefono, email } = req.body;
 
-            if (!nombre) {
+            if (!nombre?.trim()) {
                 return res.status(400).json({ success: false, message: 'El nombre es obligatorio' });
             }
 
             const [result] = await pool.execute(`
-                INSERT INTO ingenieros (nombre, especialidad, telefono, activo)
-                VALUES (?, ?, ?, TRUE)
-            `, [nombre.trim(), especialidad, telefono || null]);
+                INSERT INTO ingenieros (nombre, especialidad, telefono, email, activo)
+                VALUES (?, ?, ?, ?, TRUE)
+            `, [nombre.trim(), especialidad || 'General', telefono || null, email || null]);
 
             res.status(201).json({
                 success: true,
-                message: 'Ingeniero creado correctamente',
+                message: '✅ Ingeniero creado correctamente',
                 id: result.insertId
             });
         } catch (error) {
@@ -50,16 +61,21 @@ const ingenierosController = {
     update: async (req, res) => {
         try {
             const { id } = req.params;
-            const { nombre, especialidad, telefono } = req.body;
+            const { nombre, especialidad, telefono, email, activo } = req.body;
 
             await pool.execute(`
                 UPDATE ingenieros 
-                SET nombre = ?, especialidad = ?, telefono = ?
+                SET nombre = ?, 
+                    especialidad = ?, 
+                    telefono = ?, 
+                    email = ?,
+                    activo = ?
                 WHERE id_ingeniero = ?
-            `, [nombre, especialidad, telefono, id]);
+            `, [nombre, especialidad, telefono, email, activo !== undefined ? activo : true, id]);
 
-            res.json({ success: true, message: 'Ingeniero actualizado correctamente' });
+            res.json({ success: true, message: '✅ Ingeniero actualizado correctamente' });
         } catch (error) {
+            console.error(error);
             res.status(500).json({ success: false, message: error.message });
         }
     },
@@ -67,10 +83,11 @@ const ingenierosController = {
     delete: async (req, res) => {
         try {
             const { id } = req.params;
-            await pool.execute(`UPDATE ingenieros SET activo = FALSE WHERE id_ingeniero = ?`, [id]);
-            res.json({ success: true, message: 'Ingeniero eliminado correctamente' });
+            await pool.execute(`DELETE FROM ingenieros WHERE id_ingeniero = ?`, [id]);
+            res.json({ success: true, message: '✅ Ingeniero eliminado correctamente' });
         } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
+            console.error(error);
+            res.status(500).json({ success: false, message: 'Error al eliminar ingeniero' });
         }
     }
 };

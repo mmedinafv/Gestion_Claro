@@ -1,17 +1,121 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Sistema de Gestión</title>
-    <link rel="stylesheet" href="../css/styles.css"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 380px !important;
+            width: 100%;
+        }
+
+        canvas {
+            max-height: 380px !important;
+        }
+    </style>
 </head>
+
 <body>
-<div class="container no-sidebar">
-<main class="main-content">
-<header class="header"><div class="header-left"><button class="btn btn-secondary" onclick="volverMenu()">⬅ Volver al Menú Principal</button><h1>Dashboard</h1></div><div class="header-actions"><div class="user-info"><span class="user-name" id="userNameDisplay"></span><span class="user-role" id="userRoleDisplay"></span><span class="user-avatar">👤</span></div><button class="btn btn-danger" id="logoutBtn">Salir</button></div></header>
-<div class="stats-grid"><div class="stat-card"><div class="stat-icon">📋</div><div class="stat-info"><h3>Total Solicitudes</h3><p id="total-solicitudes">0</p></div></div><div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-info"><h3>En Proceso</h3><p id="en-proceso">0</p></div></div><div class="stat-card"><div class="stat-icon">✅</div><div class="stat-info"><h3>Completadas</h3><p id="completadas">0</p></div></div><div class="stat-card"><div class="stat-icon">⏰</div><div class="stat-info"><h3>Pendientes</h3><p id="pendientes">0</p></div></div></div>
-<div class="charts-grid"><div class="card"><h3>Solicitudes por Ingeniero</h3><div class="chart-container" id="chart-ingenieros"></div></div><div class="card"><h3>Estado de Solicitudes</h3><div class="chart-container" id="chart-estados"></div></div></div>
-<div class="card"><h3>Últimas Actualizaciones</h3><div class="table-container"><table class="table" id="ultimas-solicitudes"><thead><tr><th>ID</th><th>Cliente</th><th>Ingeniero</th><th>Estado</th><th>Fecha Inicio</th></tr></thead><tbody></tbody></table></div></div>
-</main></div>
-<script src="../js/config.js"></script><script src="../js/common.js"></script><script src="../js/dashboard.js"></script>
-</body></html>
+    <div class="container no-sidebar">
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="btn btn-secondary" onclick="volverMenu()">⬅ Volver al Menú Principal</button>
+                    <h1>Dashboard</h1>
+                </div>
+                <div class="header-actions">
+                    <div class="user-info">
+                        <span class="user-name" id="userNameDisplay"></span>
+                        <span class="user-role" id="userRoleDisplay"></span>
+                        <span class="user-avatar">👤</span>
+                    </div>
+                    <button class="btn btn-danger" id="logoutBtn">Salir</button>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-info">
+                        <h3>Total Solicitudes</h3>
+                        <p id="total-solicitudes">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-info">
+                        <h3>En Proceso</h3>
+                        <p id="en-proceso">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <h3>Completadas</h3>
+                        <p id="completadas">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏰</div>
+                    <div class="stat-info">
+                        <h3>Pendientes</h3>
+                        <p id="pendientes">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="card">
+                    <h3>Solicitudes por Ingeniero</h3>
+                    <div class="chart-container">
+                        <canvas id="chart-ingenieros"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Estado de Solicitudes</h3>
+                    <div class="chart-container">
+                        <canvas id="chart-estados"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Últimas Solicitudes</h3>
+                <div class="table-container">
+                    <table class="table" id="ultimas-solicitudes">
+                        <thead>
+                            <tr>
+                                <th>N° Producto</th>
+                                <th>Cliente</th>
+                                <th>Ingeniero</th>
+                                <th>Estado</th>
+                                <th>Fecha Estimada</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/dashboard.js"></script>
+</body>
+
+</html>

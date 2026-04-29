@@ -1,3 +1,4 @@
+// backend/server.js
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -10,39 +11,61 @@ app.use(express.json());
 
 console.log("✅ Servidor iniciando...");
 
-// Controladores
 const authController = require('./controllers/authController');
 const dashboardController = require('./controllers/dashboardController');
 const solicitudesController = require('./controllers/solicitudesController');
 const instalacionesController = require('./controllers/instalacionesController');
 const ingenierosController = require('./controllers/ingenierosController');
-const combosController = require('./controllers/combosController');
+const usuariosController = require('./controllers/usuariosController');
 
 // Rutas
 app.post('/api/auth/login', authController.login);
 app.get('/api/dashboard/resumen', dashboardController.getResumen);
 
 app.get('/api/solicitudes', solicitudesController.getAll);
+app.get('/api/solicitudes/:id', solicitudesController.getById);
 app.post('/api/solicitudes', solicitudesController.create);
+app.put('/api/solicitudes/:id', solicitudesController.update);
+app.delete('/api/solicitudes/:id', solicitudesController.delete);
 
 app.get('/api/instalaciones', instalacionesController.getAll);
+app.put('/api/instalaciones/:id/estado', instalacionesController.updateEstado);
 
-// Ingenieros CRUD
 app.get('/api/ingenieros', ingenierosController.getAll);
+app.get('/api/ingenieros/:id', ingenierosController.getById);
 app.post('/api/ingenieros', ingenierosController.create);
 app.put('/api/ingenieros/:id', ingenierosController.update);
 app.delete('/api/ingenieros/:id', ingenierosController.delete);
 
-// Combos
-app.get('/api/combos/sitios', combosController.getSitios);
-app.get('/api/combos/medios', combosController.getMedios);
-app.get('/api/combos/ingenieros', combosController.getIngenieros);
+app.get('/api/usuarios', usuariosController.getAll);
+app.get('/api/usuarios/:id', usuariosController.getById);
+app.post('/api/usuarios', usuariosController.create);
+app.put('/api/usuarios/:id', usuariosController.update);
+app.delete('/api/usuarios/:id', usuariosController.delete);
 
-app.get('/', (req, res) => {
-    res.json({ message: '✅ API Claro Honduras funcionando en puerto 5001' });
+// Combos
+app.get('/api/combos/medios', async (req, res) => {
+    try {
+        const pool = require('./config/db');
+        const [rows] = await pool.execute('SELECT id_medio, nombre_medio FROM medios WHERE activo = TRUE');
+        res.json({ success: true, data: rows });
+    } catch (e) {
+        res.json({ success: true, data: [] });
+    }
 });
 
-app.listen(PORT, async () => {
+app.get('/api/combos/ingenieros', async (req, res) => {
+    try {
+        const pool = require('./config/db');
+        const [rows] = await pool.execute('SELECT id_ingeniero, nombre FROM ingenieros WHERE activo = TRUE');
+        res.json({ success: true, data: rows });
+    } catch (e) {
+        res.json({ success: true, data: [] });
+    }
+});
+
+app.get('/', (req, res) => res.json({ message: '✅ API funcionando' }));
+
+app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-    await authController.createAdmin();
 });

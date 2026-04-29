@@ -1,1 +1,139 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Solicitudes - Sistema de Gestión</title><link rel="stylesheet" href="../css/styles.css"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></head><body><div class="container no-sidebar"><main class="main-content"><header class="header"><div class="header-left"><button class="btn btn-secondary" onclick="volverMenu()">⬅ Volver al Menú Principal</button><h1>Solicitudes</h1></div><div class="header-actions"><button class="btn btn-primary" id="nuevaSolicitudBtn">+ Nueva Solicitud</button><div class="user-info"><span class="user-name" id="userNameDisplay"></span><span class="user-role" id="userRoleDisplay"></span><span class="user-avatar">👤</span></div><button class="btn btn-danger" id="logoutBtn">Salir</button></div></header><div class="filters-bar"><input type="text" placeholder="Buscar cliente..." id="search-cliente"><select id="filter-estado"><option value="">Todos los estados</option><option value="Ing-No Elaborada">Ing-No Elaborada</option><option value="Ing-en Proceso">Ing-en Proceso</option><option value="Ing-lista y Aplicada">Ing-lista y Aplicada</option><option value="FO-en Proceso-Instalacion">FO en Proceso</option><option value="Fibra-Instal/finalizada">Finalizada</option><option value="Cancelada">Cancelada</option></select><select id="filter-ingeniero"><option value="">Todos los ingenieros</option></select><button class="btn btn-secondary" id="apply-filters">Aplicar Filtros</button><button class="btn btn-secondary" id="clear-filters">Limpiar</button></div><div class="card"><div class="table-container"><table class="table" id="solicitudes-table"><thead><tr><th>ID</th><th>Cliente</th><th>Ingeniero</th><th>Localidad</th><th>Servicio</th><th>AB</th><th>Estado</th><th>Días</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div></main></div><div id="modal-solicitud" class="modal"><div class="modal-content modal-large"><span class="close" id="cerrarModalSolicitud">&times;</span><h2 id="modal-title">Nueva Solicitud</h2><form id="form-solicitud"><input type="hidden" id="solicitud-id"><div class="form-grid"><div class="form-group"><label>Cliente *</label><input type="text" id="cliente" required></div><div class="form-group"><label>Ingeniero</label><select id="ingeniero-select"><option value="">Seleccionar...</option></select></div><div class="form-group"><label>Localidad *</label><input type="text" id="localidad" required></div><div class="form-group"><label>Departamento</label><input type="text" id="departamento"></div><div class="form-group full-width"><label>Dirección</label><textarea id="direccion" rows="2"></textarea></div><div class="form-group"><label>Fecha Inicio</label><input type="date" id="fecha_inicio"></div><div class="form-group"><label>Servicio</label><input type="text" id="servicio" value="Internet"></div><div class="form-group"><label>AB (Mbps)</label><input type="text" id="ab"></div><div class="form-group"><label>Medio</label><select id="medio"><option value="FO">FO</option><option value="Radio">Radio</option></select></div><div class="form-group"><label>Nodo</label><input type="text" id="nodo"></div><div class="form-group"><label>Estado</label><select id="estado_proceso"><option value="Ing-No Elaborada">Ing-No Elaborada</option><option value="Ing-en Proceso">Ing-en Proceso</option><option value="Ing-lista y Aplicada">Ing-lista y Aplicada</option><option value="FO-en Proceso-Instalacion">FO en Proceso</option><option value="Fibra-Instal/finalizada">Finalizada</option><option value="Cancelada">Cancelada</option></select></div><div class="form-group full-width"><label>Observaciones</label><textarea id="observaciones" rows="3"></textarea></div></div><div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-modal">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div></form></div></div><script src="../js/config.js"></script><script src="../js/common.js"></script><script src="../js/solicitudes.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitudes - Claro Honduras</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container no-sidebar">
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="btn btn-secondary" id="btnVolverMenu">⬅ Volver al Menú Principal</button>
+                    <h1>Solicitudes de Instalación</h1>
+                </div>
+                <div class="header-actions">
+                    <div class="user-info">
+                        <span class="user-name" id="userNameDisplay"></span>
+                        <span class="user-role" id="userRoleDisplay"></span>
+                    </div>
+                    <button class="btn btn-danger" id="logoutBtn">Salir</button>
+                </div>
+            </header>
+
+            <div class="filters-bar">
+                <input type="text" id="search-solicitud" placeholder="Buscar por cliente, producto, localidad..."
+                    style="flex:1; min-width:400px;">
+                <button class="btn btn-primary" id="nuevaSolicitudBtn">+ Nueva Solicitud</button>
+            </div>
+
+            <div class="card">
+                <h3>Listado de Solicitudes <span id="result-count" style="font-weight:normal;color:#666;"></span></h3>
+                <div class="table-container">
+                    <table class="table" id="solicitudes-table">
+                        <thead>
+                            <tr>
+                                <th>N° Producto</th>
+                                <th>Cliente</th>
+                                <th>Localidad</th>
+                                <th>Departamento</th>
+                                <th>Servicio</th>
+                                <th>Ancho Banda</th>
+                                <th>Ingeniero</th>
+                                <th>Estado</th>
+                                <th>Fecha Estimada</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL CON X A LA DERECHA ARRIBA -->
+    <div id="solicitudModal" class="modal">
+        <div class="modal-content">
+            <!-- Botón X bien a la derecha -->
+            <span class="modal-close" onclick="closeModal('solicitudModal')">✕</span>
+
+            <h3 id="modalTitle">Nueva Solicitud</h3>
+
+            <form id="solicitudForm">
+                <input type="hidden" id="id_nodo">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>N° Producto</label>
+                        <input type="text" id="numero_producto" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <input type="text" id="cliente" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Localidad</label>
+                        <input type="text" id="localidad" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Departamento</label>
+                        <input type="text" id="departamento" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Servicio</label>
+                        <input type="text" id="servicio" value="Internet" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ancho de Banda</label>
+                        <input type="text" id="ancho_banda">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Medio</label>
+                        <select id="id_medio"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ingeniero Asignado</label>
+                        <select id="ingeniero_asignado"></select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea id="observaciones" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha Estimada</label>
+                    <input type="date" id="fecha_estimada_instalacion">
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('solicitudModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Solicitud</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/solicitudes.js"></script>
+</body>
+
+</html>

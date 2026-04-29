@@ -1,1 +1,105 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Ingenieros - Sistema de Gestión</title><link rel="stylesheet" href="../css/styles.css"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></head><body><div class="container no-sidebar"><main class="main-content"><header class="header"><div class="header-left"><button class="btn btn-secondary" id="btnVolverMenu">⬅ Volver al Menú Principal</button><h1>Ingenieros</h1></div><div class="header-actions"><button class="btn btn-primary admin-only" id="nuevoIngenieroBtn">+ Nuevo Ingeniero</button><div class="user-info"><span class="user-name" id="userNameDisplay"></span><span class="user-role" id="userRoleDisplay"></span><span class="user-avatar">👤</span></div><button class="btn btn-danger" id="logoutBtn">Salir</button></div></header><div class="stats-grid"><div class="stat-card"><div class="stat-icon">👥</div><div class="stat-info"><h3>Total Ingenieros</h3><p id="total-ingenieros">0</p></div></div><div class="stat-card"><div class="stat-icon">✅</div><div class="stat-info"><h3>Activos</h3><p id="ingenieros-activos">0</p></div></div></div><div class="card"><div class="table-container"><table class="table" id="ingenieros-table"><thead><tr><th>ID</th><th>Nombre</th><th>Especialidad</th><th>Teléfono</th><th>Email</th><th>Solicitudes</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div></main></div><div id="modal-ingeniero" class="modal"><div class="modal-content"><span class="close" id="cerrarModalIngeniero">&times;</span><h2 id="modal-ingeniero-title">Nuevo Ingeniero</h2><form id="form-ingeniero"><input type="hidden" id="ingeniero-id"><div class="form-group"><label>Nombre *</label><input type="text" id="ingeniero-nombre" required></div><div class="form-group"><label>Especialidad</label><select id="ingeniero-especialidad"><option value="Fibra Óptica">Fibra Óptica</option><option value="Radio Enlace">Radio Enlace</option><option value="Redes">Redes</option><option value="General">General</option></select></div><div class="form-group"><label>Teléfono</label><input type="tel" id="ingeniero-telefono"></div><div class="form-group"><label>Email</label><input type="email" id="ingeniero-email"></div><div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-ingeniero">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div></form></div></div><script src="../js/config.js"></script><script src="../js/common.js"></script><script src="../js/ingenieros.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingenieros - Claro Honduras</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container no-sidebar">
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="btn btn-secondary" id="btnVolverMenu">⬅ Volver al Menú Principal</button>
+                    <h1>Ingenieros</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="nuevoIngenieroBtn">+ Nuevo Ingeniero</button>
+                    <div class="user-info">
+                        <span class="user-name" id="userNameDisplay"></span>
+                        <span class="user-role" id="userRoleDisplay"></span>
+                        <span class="user-avatar">👤</span>
+                    </div>
+                    <button class="btn btn-danger" id="logoutBtn">Salir</button>
+                </div>
+            </header>
+
+            <div class="card">
+                <h3>Listado de Ingenieros</h3>
+                <div class="table-container">
+                    <table class="table" id="ingenieros-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Especialidad</th>
+                                <th>Teléfono</th>
+                                <th>Correo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal-ingeniero" class="modal">
+        <div class="modal-content modal-small">
+            <span class="close" onclick="closeModal('modal-ingeniero')">&times;</span>
+            <h2 id="modal-ingeniero-title">Nuevo Ingeniero</h2>
+
+            <form id="form-ingeniero">
+                <input type="hidden" id="ingeniero-id">
+
+                <div class="form-group">
+                    <label>Nombre Completo *</label>
+                    <input type="text" id="ingeniero-nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Especialidad *</label>
+                    <select id="ingeniero-especialidad" required>
+                        <option value="">Seleccionar Especialidad...</option>
+                        <option value="Ing de Proyectos">Ing de Proyectos</option>
+                        <option value="Especialista IP">Especialista IP</option>
+                        <option value="Especialista IP Diger">Especialista IP Diger</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" id="ingeniero-telefono" placeholder="9999-9999">
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="ingeniero-email" placeholder="ejemplo@clarohn.com">
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select id="ingeniero-activo">
+                        <option value="1">Activo</option>
+                        <option value="0">Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('modal-ingeniero')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Ingeniero</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/ingenieros.js"></script>
+</body>
+
+</html>

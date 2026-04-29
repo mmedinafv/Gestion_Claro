@@ -1,31 +1,34 @@
-// backend/controllers/combosController.js
-const NodoModel = require('../models/nodoModel');
+// controllers/combosController.js
+const pool = require('../config/db');
 
 const combosController = {
 
-    getSitios: async (req, res) => {
-        try {
-            const sitios = await NodoModel.getSitios();
-            res.json({ success: true, data: sitios });
-        } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
-        }
-    },
-
     getMedios: async (req, res) => {
         try {
-            const medios = await NodoModel.getMedios();
-            res.json({ success: true, data: medios });
+            const [rows] = await pool.execute(`
+                SELECT id_medio, nombre_medio 
+                FROM medios 
+                WHERE activo = TRUE 
+                ORDER BY nombre_medio
+            `);
+            res.json({ success: true, data: rows });
         } catch (error) {
+            console.error('Error getMedios:', error);
             res.status(500).json({ success: false, message: error.message });
         }
     },
 
     getIngenieros: async (req, res) => {
         try {
-            const ingenieros = await NodoModel.getIngenieros();
-            res.json({ success: true, data: ingenieros });
+            const [rows] = await pool.execute(`
+                SELECT id_ingeniero, nombre 
+                FROM ingenieros 
+                WHERE activo = TRUE 
+                ORDER BY nombre
+            `);
+            res.json({ success: true, data: rows });
         } catch (error) {
+            console.error('Error getIngenieros:', error);
             res.status(500).json({ success: false, message: error.message });
         }
     }

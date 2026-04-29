@@ -1,10 +1,17 @@
-// usuarios.js - CRUD Corregido
 document.addEventListener('DOMContentLoaded', () => {
     setupUserInfo();
     setupLogout();
 
-    document.getElementById('btnVolverMenu')?.addEventListener('click', volverMenu);
-    document.getElementById('nuevoUsuarioBtn')?.addEventListener('click', nuevoUsuario);
+    document.getElementById('btnVolverMenu').addEventListener('click', volverMenu);
+    document.getElementById('nuevoUsuarioBtn').addEventListener('click', () => {
+        document.getElementById('modal-title').textContent = 'Nuevo Usuario';
+        document.getElementById('form-usuario').reset();
+        document.getElementById('user-id').value = '';
+        loadRoles();
+        openModal('modal-usuario');
+    });
+
+    document.getElementById('form-usuario').addEventListener('submit', saveUsuario);
 
     loadUsuarios();
 });
@@ -18,15 +25,8 @@ async function loadUsuarios() {
     }
 }
 
-async function nuevoUsuario() {
-    document.getElementById('modal-title').textContent = 'Nuevo Usuario';
-    document.getElementById('form-usuario').reset();
-    document.getElementById('user-id').value = '';
-    await loadRoles();
-    openModal('modal-usuario');
-}
-
 async function loadRoles() {
+    // Por ahora cargamos roles estáticos (puedes mejorarlo después)
     const select = document.getElementById('id_rol');
     select.innerHTML = `
         <option value="1">Administrador General</option>
@@ -35,41 +35,30 @@ async function loadRoles() {
     `;
 }
 
-document.getElementById('form-usuario').addEventListener('submit', saveUsuario);
-
 async function saveUsuario(e) {
     e.preventDefault();
-
     const id = document.getElementById('user-id').value;
     const data = {
-        username: document.getElementById('username').value.trim(),
-        nombre_completo: document.getElementById('nombre_completo').value.trim(),
-        password: document.getElementById('password').value.trim(),
-        id_rol: parseInt(document.getElementById('id_rol').value),
+        username: document.getElementById('username').value,
+        nombre_completo: document.getElementById('nombre_completo').value,
+        password: document.getElementById('password').value || undefined,
+        id_rol: document.getElementById('id_rol').value,
         activo: document.getElementById('activo').value === '1'
     };
-
-    if (!data.username || !data.nombre_completo) {
-        showNotification('Usuario y Nombre Completo son obligatorios', 'error');
-        return;
-    }
 
     try {
         let res;
         if (id) {
             res = await apiFetch(`/api/usuarios/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-            showNotification('✅ Usuario actualizado', 'success');
         } else {
-            if (!data.password) {
-                showNotification('La contraseña es obligatoria para nuevos usuarios', 'error');
-                return;
-            }
             res = await apiFetch('/api/usuarios', { method: 'POST', body: JSON.stringify(data) });
-            showNotification('✅ Usuario creado correctamente', 'success');
         }
 
-        closeModal('modal-usuario');
-        loadUsuarios();
+        if (res.success) {
+            showNotification('Usuario guardado correctamente', 'success');
+            closeModal('modal-usuario');
+            loadUsuarios();
+        }
     } catch (error) {
         showNotification('Error al guardar usuario', 'error');
     }
@@ -85,13 +74,13 @@ function renderUsuarios(data) {
                 <td>${user.id_usuario}</td>
                 <td><strong>${user.username}</strong></td>
                 <td>${user.nombre_completo}</td>
-                <td>${user.rol || user.nombre_rol || 'Sin rol'}</td>
+                <td>${user.nombre_rol}</td>
                 <td><span class="status-badge ${user.activo ? 'status-completado' : 'status-pendiente'}">
                     ${user.activo ? 'Activo' : 'Inactivo'}
                 </span></td>
                 <td>
-                    <button class="btn btn-secondary btn-sm" onclick="editUsuario(${user.id_usuario})">✏️ Editar</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteUsuario(${user.id_usuario})">🗑 Eliminar</button>
+                    <button class="btn btn-secondary" onclick="editUsuario(${user.id_usuario})">Editar</button>
+                    <button class="btn btn-danger" onclick="deleteUsuario(${user.id_usuario})">Eliminar</button>
                 </td>
             </tr>`;
     });
@@ -108,21 +97,18 @@ async function editUsuario(id) {
             document.getElementById('nombre_completo').value = u.nombre_completo;
             document.getElementById('id_rol').value = u.id_rol;
             document.getElementById('activo').value = u.activo ? '1' : '0';
-            await loadRoles();
             openModal('modal-usuario');
         }
-    } catch (e) {
-        showNotification('Error al cargar usuario', 'error');
-    }
+    } catch (e) { }
 }
 
 async function deleteUsuario(id) {
-    if (!confirm('¿Desactivar este usuario?')) return;
+    if (!confirm('¿Eliminar este usuario?')) return;
     try {
         await apiFetch(`/api/usuarios/${id}`, { method: 'DELETE' });
-        showNotification('Usuario desactivado correctamente', 'success');
+        showNotification('Usuario eliminado', 'success');
         loadUsuarios();
     } catch (e) {
-        showNotification('Error al desactivar usuario', 'error');
+        showNotification('Error al eliminar', 'error');
     }
 }

@@ -1,3 +1,4 @@
+// backend/controllers/instalacionesController.js - CORREGIDO
 const pool = require('../config/db');
 
 const instalacionesController = {
@@ -9,17 +10,15 @@ const instalacionesController = {
             let query = `
                 SELECT 
                     n.id_nodo as id,
-                    CONCAT(COALESCE(c.nombre_empresa, 'Sin cliente'), ' - ', n.servicio) as nombre,
-                    75 as porcentaje_instalacion,
+                    COALESCE(n.cliente, c.nombre_empresa, 'Sin cliente') as nombre,
+                    COALESCE(n.porcentaje_instalacion, 0) as porcentaje_instalacion,
                     n.codigo_sitio,
-                    COALESCE(s.nombre_sitio, '-') as sitio,
-                    COALESCE(m.nombre_medio, '-') as medio,
+                    n.servicio,
+                    n.estado_proceso,
                     n.observaciones as comentarios,
-                    n.estado_proceso
+                    n.numero_producto
                 FROM nodos n
                 LEFT JOIN clientes c ON n.id_cliente = c.id_cliente
-                LEFT JOIN sitios s ON n.codigo_sitio = s.codigo_sitio
-                LEFT JOIN medios m ON n.id_medio = m.id_medio
                 WHERE 1=1
             `;
 
@@ -31,17 +30,40 @@ const instalacionesController = {
             }
 
             if (search && search.trim() !== '') {
-                query += ` AND (c.nombre_empresa LIKE ? OR s.nombre_sitio LIKE ? OR n.codigo_sitio LIKE ?)`;
-                params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+                const like = `%${search.trim()}%`;
+                query += ` AND (
+                    COALESCE(n.cliente, c.nombre_empresa) LIKE ? 
+                    OR n.codigo_sitio LIKE ? 
+                    OR n.servicio LIKE ?
+                    OR n.localidad LIKE ?
+                )`;
+                params.push(like, like, like, like);
             }
 
-            query += ` ORDER BY n.fecha_ingreso DESC`;
+            query += ` ORDER BY n.id_nodo DESC`;
 
             const [rows] = await pool.execute(query, params);
-
             res.json({ success: true, data: rows });
         } catch (error) {
-            console.error(error);
+            console.error('❌ Error en instalaciones getAll:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    updateEstado: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { estado_proceso } = req.body;
+
+            await pool.execute(`
+                UPDATE nodos 
+                SET estado_proceso = ?, 
+                    fecha_ultima_actualizacion = NOW()
+                WHERE id_nodo = ?
+            `, [estado_proceso, id]);
+
+            res.json({ success: true, message: 'Estado actualizado' });
+        } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
     }

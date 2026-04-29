@@ -28,17 +28,18 @@
             </header>
 
             <div class="filters-bar">
-                <input type="text" id="search-instalacion" placeholder="Buscar cliente o sitio..."
-                    style="min-width: 300px;">
-                <select id="filter-estado" style="min-width: 250px;">
+                <input type="text" id="search-instalacion" placeholder="Buscar por cliente, sitio, localidad..."
+                    style="min-width: 420px; flex: 1;">
+
+                <select id="filter-estado" style="min-width: 260px;">
                     <option value="">🌐 Todos los Estados</option>
-                    <option value="FO-en Proceso-Instalacion">🔄 FO en Proceso</option>
-                    <option value="Fibra-Instal/finalizada">✅ Finalizada</option>
+                    <option value="Ing-No Elaborada">📋 Pendiente</option>
                     <option value="Ing-en Proceso">⏳ En Proceso</option>
-                    <option value="Ing-lista y Aplicada">📋 Lista y Aplicada</option>
+                    <option value="FO-en Proceso-Instalacion">🔄 FO en Instalación</option>
+                    <option value="Fibra-Instal/finalizada">✅ Finalizada</option>
                 </select>
-                <button class="btn btn-primary" id="apply-filters">🔎 Filtrar</button>
-                <button class="btn btn-secondary" id="clear-filters">Limpiar</button>
+
+                <button class="btn btn-secondary" id="clear-filters">🗑 Limpiar Filtros</button>
             </div>
 
             <div class="card">
@@ -50,9 +51,9 @@
                                 <th>Cliente / Servicio</th>
                                 <th>Avance</th>
                                 <th>Sitio</th>
-                                <th>Medio</th>
+                                <th>Servicio</th>
                                 <th>Estado</th>
-                                <th>Acciones</th>
+                                <th>Comentarios</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
