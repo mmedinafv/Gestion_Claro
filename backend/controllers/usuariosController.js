@@ -1,40 +1,32 @@
-// backend/controllers/usuariosController.js - CORREGIDO DEFINITIVAMENTE
+// controllers/usuariosController.js - CRUD COMPLETO Y CORREGIDO
 const pool = require('../config/db');
+const bcrypt = require('bcryptjs');
 
 const usuariosController = {
 
     getAll: async (req, res) => {
         try {
             const [rows] = await pool.execute(`
-                SELECT 
-                    u.id_usuario,
-                    u.username,
-                    u.nombre_completo,
-                    u.id_rol,
-                    COALESCE(r.nombre_rol, 'Sin rol') as rol,
-                    u.activo,
-                    u.fecha_creacion
+                SELECT u.id_usuario, u.username, u.nombre_completo, 
+                       r.nombre_rol as rol, u.activo, u.fecha_creacion
                 FROM usuarios u
-                LEFT JOIN roles r ON u.id_rol = r.id_rol
+                JOIN roles r ON u.id_rol = r.id_rol
                 ORDER BY u.id_usuario DESC
             `);
             res.json({ success: true, data: rows });
         } catch (error) {
-            console.error('❌ Error usuarios getAll:', error);
+            console.error(error);
             res.status(500).json({ success: false, message: error.message });
         }
     },
 
     getById: async (req, res) => {
         try {
-            const { id } = req.params;
             const [rows] = await pool.execute(`
-                SELECT u.*, COALESCE(r.nombre_rol, 'Sin rol') as rol
-                FROM usuarios u
-                LEFT JOIN roles r ON u.id_rol = r.id_rol
-                WHERE u.id_usuario = ?
-            `, [id]);
-            res.json({ success: rows.length > 0, data: rows[0] || null });
+                SELECT id_usuario, username, nombre_completo, id_rol, activo 
+                FROM usuarios WHERE id_usuario = ?
+            `, [req.params.id]);
+            res.json({ success: rows.length > 0, data: rows[0] });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
@@ -42,13 +34,26 @@ const usuariosController = {
 
     create: async (req, res) => {
         try {
-            const { username, nombre_completo, id_rol = 1 } = req.body;
+            const { username, nombre_completo, password, id_rol, activo = true } = req.body;
+
+            if (!username || !nombre_completo || !password || !id_rol) {
+                return res.status(400).json({ success: false, message: 'Faltan campos obligatorios' });
+            }
+
+            const hash = await bcrypt.hash(password, 10);
+
             const [result] = await pool.execute(`
-                INSERT INTO usuarios (username, nombre_completo, id_rol, activo, password_hash)
-                VALUES (?, ?, ?, 1, '123456')
-            `, [username, nombre_completo, id_rol]);
-            res.status(201).json({ success: true, id: result.insertId });
+                INSERT INTO usuarios (username, password_hash, nombre_completo, id_rol, activo)
+                VALUES (?, ?, ?, ?, ?)
+            `, [username, hash, nombre_completo, id_rol, activo]);
+
+            res.status(201).json({
+                success: true,
+                message: 'Usuario creado correctamente',
+                id: result.insertId
+            });
         } catch (error) {
+            console.error(error);
             res.status(500).json({ success: false, message: error.message });
         }
     },
@@ -56,14 +61,25 @@ const usuariosController = {
     update: async (req, res) => {
         try {
             const { id } = req.params;
-            const { nombre_completo, id_rol, activo } = req.body;
-            await pool.execute(`
-                UPDATE usuarios 
-                SET nombre_completo = ?, id_rol = ?, activo = ?
-                WHERE id_usuario = ?
-            `, [nombre_completo, id_rol, activo, id]);
-            res.json({ success: true, message: 'Usuario actualizado' });
+            const { username, nombre_completo, password, id_rol, activo } = req.body;
+
+            let query = `UPDATE usuarios SET username = ?, nombre_completo = ?, id_rol = ?, activo = ?`;
+            let params = [username, nombre_completo, id_rol, activo];
+
+            if (password && password.trim() !== '') {
+                const hash = await bcrypt.hash(password, 10);
+                query += `, password_hash = ?`;
+                params.push(hash);
+            }
+
+            query += ` WHERE id_usuario = ?`;
+            params.push(id);
+
+            await pool.execute(query, params);
+
+            res.json({ success: true, message: 'Usuario actualizado correctamente' });
         } catch (error) {
+            console.error(error);
             res.status(500).json({ success: false, message: error.message });
         }
     },
@@ -71,9 +87,10 @@ const usuariosController = {
     delete: async (req, res) => {
         try {
             const { id } = req.params;
-            await pool.execute('DELETE FROM usuarios WHERE id_usuario = ?', [id]);
-            res.json({ success: true, message: 'Usuario eliminado' });
+            await pool.execute(`UPDATE usuarios SET activo = FALSE WHERE id_usuario = ?`, [id]);
+            res.json({ success: true, message: 'Usuario desactivado correctamente' });
         } catch (error) {
+            console.error(error);
             res.status(500).json({ success: false, message: error.message });
         }
     }

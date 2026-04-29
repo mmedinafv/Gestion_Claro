@@ -1,12 +1,12 @@
-// backend/controllers/solicitudesController.js - CORREGIDO (Crear y Editar funcionando)
+// controllers/solicitudesController.js - CRUD COMPLETO Y COMPATIBLE
 const pool = require('../config/db');
 
 const solicitudesController = {
 
+    // ==================== LISTAR ====================
     getAll: async (req, res) => {
         try {
-            const { search } = req.query;
-            let query = `
+            const [rows] = await pool.execute(`
                 SELECT 
                     n.id_nodo as id,
                     n.numero_producto,
@@ -22,45 +22,39 @@ const solicitudesController = {
                 FROM nodos n
                 LEFT JOIN clientes c ON n.id_cliente = c.id_cliente
                 LEFT JOIN ingenieros i ON n.ingeniero_asignado = i.id_ingeniero
-                WHERE 1=1
-            `;
-            const params = [];
-
-            if (search) {
-                const term = `%${search}%`;
-                query += ` AND (n.numero_producto LIKE ? OR COALESCE(n.cliente, c.nombre_empresa) LIKE ? OR n.localidad LIKE ?)`;
-                params.push(term, term, term);
-            }
-
-            query += ` ORDER BY n.id_nodo DESC`;
-            const [rows] = await pool.execute(query, params);
+                ORDER BY n.id_nodo DESC
+            `);
             res.json({ success: true, data: rows });
         } catch (error) {
+            console.error('Error getAll:', error);
             res.status(500).json({ success: false, message: error.message });
         }
     },
 
+    // ==================== OBTENER POR ID ====================
     getById: async (req, res) => {
         try {
-            const { id } = req.params;
-            const [rows] = await pool.execute('SELECT * FROM nodos WHERE id_nodo = ?', [id]);
+            const [rows] = await pool.execute('SELECT * FROM nodos WHERE id_nodo = ?', [req.params.id]);
             res.json({ success: rows.length > 0, data: rows[0] });
         } catch (error) {
+            console.error(error);
             res.status(500).json({ success: false, message: error.message });
         }
     },
 
+    // ==================== CREAR ====================
     create: async (req, res) => {
         try {
             const data = req.body;
             const [result] = await pool.execute(`
                 INSERT INTO nodos 
-                (numero_producto, cliente, localidad, departamento, servicio, ancho_banda, 
-                 id_medio, ingeniero_asignado, observaciones, fecha_estimada_instalacion, estado_proceso)
+                (numero_producto, cliente, localidad, departamento, servicio, 
+                 ancho_banda, id_medio, ingeniero_asignado, observaciones, 
+                 fecha_estimada_instalacion, estado_proceso)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Ing-No Elaborada')
             `, [
-                data.numero_producto,
-                data.cliente,
+                "PROD-" + Date.now(),
+                data.cliente || null,
                 data.localidad,
                 data.departamento,
                 data.servicio || 'Internet',
@@ -71,13 +65,18 @@ const solicitudesController = {
                 data.fecha_estimada_instalacion || null
             ]);
 
-            res.status(201).json({ success: true, id: result.insertId, message: 'Solicitud creada' });
+            res.status(201).json({
+                success: true,
+                id: result.insertId,
+                message: 'Solicitud creada correctamente'
+            });
         } catch (error) {
             console.error(error);
             res.status(500).json({ success: false, message: error.message });
         }
     },
 
+    // ==================== ACTUALIZAR ====================
     update: async (req, res) => {
         try {
             const { id } = req.params;
@@ -85,29 +84,14 @@ const solicitudesController = {
 
             await pool.execute(`
                 UPDATE nodos SET 
-                    numero_producto = ?,
-                    cliente = ?,
-                    localidad = ?,
-                    departamento = ?,
-                    servicio = ?,
-                    ancho_banda = ?,
-                    id_medio = ?,
-                    ingeniero_asignado = ?,
-                    observaciones = ?,
-                    fecha_estimada_instalacion = ?
+                    cliente = ?, localidad = ?, departamento = ?, servicio = ?,
+                    ancho_banda = ?, id_medio = ?, ingeniero_asignado = ?,
+                    observaciones = ?, fecha_estimada_instalacion = ?
                 WHERE id_nodo = ?
             `, [
-                data.numero_producto,
-                data.cliente,
-                data.localidad,
-                data.departamento,
-                data.servicio || 'Internet',
-                data.ancho_banda,
-                data.id_medio || null,
-                data.ingeniero_asignado || null,
-                data.observaciones || '',
-                data.fecha_estimada_instalacion || null,
-                id
+                data.cliente, data.localidad, data.departamento, data.servicio,
+                data.ancho_banda, data.id_medio, data.ingeniero_asignado,
+                data.observaciones, data.fecha_estimada_instalacion, id
             ]);
 
             res.json({ success: true, message: 'Solicitud actualizada correctamente' });
@@ -117,13 +101,41 @@ const solicitudesController = {
         }
     },
 
+    // ==================== ELIMINAR ====================
     delete: async (req, res) => {
+        const conn = await pool.getConnection();
         try {
             const { id } = req.params;
-            await pool.execute('DELETE FROM nodos WHERE id_nodo = ?', [id]);
-            res.json({ success: true, message: 'Solicitud eliminada' });
+
+            await conn.beginTransaction();
+
+            const [existe] = await conn.execute(
+                'SELECT numero_producto FROM nodos WHERE id_nodo = ?', [id]
+            );
+
+            if (existe.length === 0) {
+                await conn.rollback();
+                return res.status(404).json({ success: false, message: 'Solicitud no encontrada' });
+            }
+
+            // Eliminar registros hijos primero
+            await conn.execute('DELETE FROM historial_estados WHERE id_nodo = ?', [id]);
+
+            // Eliminar la solicitud
+            await conn.execute('DELETE FROM nodos WHERE id_nodo = ?', [id]);
+
+            await conn.commit();
+
+            res.json({
+                success: true,
+                message: `✅ Solicitud ${existe[0].numero_producto} eliminada correctamente`
+            });
         } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
+            await conn.rollback();
+            console.error('❌ Error al eliminar solicitud:', error);
+            res.status(500).json({ success: false, message: 'Error al eliminar la solicitud' });
+        } finally {
+            conn.release();
         }
     }
 };
